@@ -1,3 +1,5 @@
 # Lua Geometry
 
-This collection contains mostly ports of open source libraries and algorithms that I've used in my exploration of procedural 2d map generation for Love2d games.
+This collection contains mostly ports of open source libraries and algorithms that I've used in my exploration of procedural 2d map generation for Love2d games. Most of this research stemmed from stumbling on Amit Patel's (Red Blob Games) informative and evidently influential article [Polygonal Map Generation for Games](http://www-cs-students.stanford.edu/~amitp/game-programming/polygon-map-generation/), as well as their related writings like [Data structure for triangle meshes](https://www.redblobgames.com/x/1722-b-rep-triangle-meshes/), [Alternatives to Voronoi diagrams](https://www.redblobgames.com/x/1721-voronoi-alternative/) and [Jittered grid vs Poisson disc](https://www.redblobgames.com/x/1830-jittered-grid/).
+
+Their writing pointed me to both [Delaunator](https://github.com/mapbox/delaunator) for Delaunay Triangulation and Poisson Disc generation methods such as those documented in [Fil's overview on Observable]([url](https://observablehq.com/@fil/poisson-distribution-generators)).
