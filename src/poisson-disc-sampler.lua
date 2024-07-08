@@ -9,9 +9,8 @@ https://observablehq.com/@mbostock/poisson-disc-distribution
 A brief history of these functions is given at:
 https://observablehq.com/@fil/poisson-distribution-generators
 ]]
-
-local List = require((...):gsub("poisson-disc-sampler", "list"))
-local Class = require((...):gsub("poisson-disc-sampler", "class"))
+local List = require((...):gsub("poisson%-disc%-sampler", "list"))
+local Class = require((...):gsub("poisson%-disc%-sampler", "class"))
 
 local PoissonDiscSampler = Class {}
 

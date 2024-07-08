@@ -32,7 +32,7 @@ SOFTWARE.
 -- Table based list, can handle up to 2^52 elements
 -- See https://www.lua.org/pil/11.4.html
 
-local Class = require((...):gsub("table_list", "class"))
+local Class = require((...):gsub("list", "class"))
 
 local List = Class {}
 

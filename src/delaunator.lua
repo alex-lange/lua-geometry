@@ -42,21 +42,14 @@ function Delaunator.from(points)
   local n = #points
   local coords = {}
 
-  if points.getX and points.getY then
-    for i = 1, n do
-      coords[i * 2 - 1] = points:getX(i)
-      coords[i * 2] = points:getY(i)
-    end
-  else
-    for i = 1, n do
-      coords[i * 2 - 1] = points[i].x
-      coords[i * 2] = points[i].y
-    end
-  end
-
   for i = 0, n - 1 do
-    coords[i * 2] = points[i + 1].x
-    coords[i * 2 + 1] = points[i + 1].y
+    if points.getX and points.getY then
+      coords[i * 2] = points:getX(i)
+      coords[i * 2 + 1] = points:getY(i)
+    else
+      coords[i * 2] = points[i + 1].x
+      coords[i * 2 + 1] = points[i + 1].y
+    end
   end
 
   return Delaunator(coords)
