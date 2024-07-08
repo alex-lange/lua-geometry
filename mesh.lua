@@ -143,7 +143,7 @@ function Mesh:oppositeSide(s)
 end
 
 function Mesh:sidesAroundTriangle(t)
-  return { t * 3, t * 3 + 1, t * 3 + 2 }
+  return t * 3, t * 3 + 1, t * 3 + 2
 end
 
 function Mesh:cellsAroundTriangle(t)
@@ -224,5 +224,29 @@ function Mesh:forEachCellEdge(callback)
     end
   end
 end
+
+function Mesh:forEachTriangleEdge(callback)
+  for e = 0, self.numSides - 1 do
+    if (e < self._halfEdges[e]) then
+      local p1 = self:cellPosition(self._triangles[e])
+      local p2 = self:cellPosition(self._triangles[self:nextSide(e)])
+      if p1 and p2 then
+        callback(p1, p2)
+      end
+    end
+  end
+end
+
+-- function Mesh:forEachTriangle(callback)
+--   for t = 0, self.numSides / 3 - 1 do
+--     local i, j, k = self:sidesAroundTriangle(t)
+--     local a = self:cellPosition(i)
+--     local b = self:cellPosition(j)
+--     local c = self:cellPosition(k)
+--     if a and b and c then
+--       callback(a, b, c)
+--     end
+--   end
+-- end
 
 return Mesh
