@@ -33,6 +33,7 @@ function PoissonDiscSampler:init(width, height, radius)
   for i = 1, self.gridWidth * self.gridHeight do
     self.grid[i] = false
   end
+  self.points = {}
 
   -- The queue is the list of points already part of the sample that are potential parents for new points
   self.queue = List()
@@ -70,6 +71,9 @@ function PoissonDiscSampler:addToSample(x, y)
   local index = self.gridWidth * j + i + 1
   local s = {x = x, y = y}
   self.grid[index] = s
+
+  table.insert(self.points, s)
+
   self.queue:push_tail(s)
   return s
 end

@@ -52,8 +52,7 @@ Triangle contains exactly one Cell point (defined as the center/centroid of the 
 these points in the _cellPositions and _trianglePositions tables, respectively.
 
 Delaunator stores each edge as two half-edges. This is so that each triangle has a unique half-edge,
-and that each half-edge can be identified by a single seed point (and also resulting in the number
-of edges being the same as the number of cells and the number of triangles!).
+(and results in the number of edges being the same as the number of cells and the number of triangles!).
 The neighboring triangle has the opposite half-edge.
   - delaunator.triangles[e] contains the index of a point where the half-edge of a triangle starts,
     and therefore this point is also the position of a cell that intersects with this triangle.
@@ -169,6 +168,7 @@ function Mesh:cellWithInnerSide(s)
 end
 
 function Mesh:cellWithOuterSide(s)
+  -- return self._triangles[self._halfEdges[s]] -- pretty sure this works but nextHalfEdge is fine too
   return self._triangles[self:nextHalfEdge(s)]
 end
 
@@ -193,6 +193,14 @@ function Mesh:trianglesAroundTriangle(t)
   return { self:triangleWithOuterSide(a), self:triangleWithOuterSide(b), self:triangleWithOuterSide(c) }
 end
 
+--[[
+     /| |\       a = incoming
+    / | | \      b = nextHalfEdge(a) = outgoing
+   /  ^ |  ^     c = oppositeSide(b) = incoming
+  /   b c   \    d = nextHalfEdge(c) = outgoing
+ V    | V    \   ...
+/_a_>_| |_d_>_\
+]]
 function Mesh:sidesAroundCell(r)
   local s = self.sideOfCell[r]
   local incoming = s
