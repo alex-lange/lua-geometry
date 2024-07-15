@@ -82,7 +82,7 @@ function Mesh:init(points, delaunator)
   self._triangles = delaunator.triangles
   self._halfEdges = delaunator.halfEdges
 
-  self.numEdges = #self._triangles + 1 -- add 1 because Lua indexes by 1 not 0 so it doesn't got the 0 index as part of the length
+  self.numEdges = #self._triangles + 1 -- add 1 because Lua indexes by 1 not 0 so it doesn't count the 0 index as part of the length
   if self.numEdges % 3 ~= 0 then
     error("Invalid number of sides is not divisble by 3: " .. self.numEdges)
   end
@@ -100,7 +100,7 @@ function Mesh:load()
   -- Construct an index for finding sides connected to a cell
   self.sideOfCell = {}
   for c = 0, self.numEdges - 1 do
-    local endpoint = self._triangles[self:nextHalfEdge(c)]
+    local endpoint = self._triangles[self:nextTriangleHalfEdge(c)]
     if (self.sideOfCell[endpoint] == nil or self._halfEdges[c] == -1) then
       self.sideOfCell[endpoint] = c
     end
@@ -121,6 +121,10 @@ function Mesh:load()
   end
 end
 
+function Mesh:point(edge)
+  return self._cellPositions[self._triangles[edge]]
+end
+
 function Mesh:cellPosition(cell)
   return self._cellPositions[cell]
 end
@@ -131,7 +135,7 @@ end
 
 -- Given a side of a triangle, return the next side of that same triangle.
 -- (0 -> 1, 1 -> 2, 2 -> 0)
-function Mesh:nextHalfEdge(edge)
+function Mesh:nextTriangleHalfEdge(edge)
   if edge % 3 == 2 then
     return edge - 2
   else
@@ -141,7 +145,7 @@ end
 
 -- Given a side of a triangle, return the previous side of that same triangle.
 -- (0 -> 2, 2 -> 1, 1 -> 0)
-function Mesh:previousHalfEdge(edge)
+function Mesh:previousTriangleHalfEdge(edge)
   if edge % 3 == 0 then
     return edge + 2
   else
@@ -169,7 +173,7 @@ end
 
 function Mesh:cellWithOuterSide(s)
   -- return self._triangles[self._halfEdges[s]] -- pretty sure this works but nextHalfEdge is fine too
-  return self._triangles[self:nextHalfEdge(s)]
+  return self._triangles[self:nextTriangleHalfEdge(s)]
 end
 
 -- A side from p-->q will have a pair q-->p, at index
@@ -190,14 +194,14 @@ end
 
 function Mesh:trianglesAroundTriangle(t)
   local a, b, c = self:edgesOfTriangle(t)
-  return { self:triangleWithOuterSide(a), self:triangleWithOuterSide(b), self:triangleWithOuterSide(c) }
+  return self:triangleWithOuterSide(a), self:triangleWithOuterSide(b), self:triangleWithOuterSide(c)
 end
 
 --[[
      /| |\       a = incoming
-    / | | \      b = nextHalfEdge(a) = outgoing
+    / | | \      b = nextTriangleHalfEdge(a) = outgoing
    /  ^ |  ^     c = oppositeSide(b) = incoming
-  /   b c   \    d = nextHalfEdge(c) = outgoing
+  /   b c   \    d = nextTriangleHalfEdge(c) = outgoing
  V    | V    \   ...
 /_a_>_| |_d_>_\
 ]]
@@ -212,7 +216,7 @@ function Mesh:sidesAroundCell(r)
 
   while true do
     table.insert(sides, self:oppositeSide(incoming))
-    local outgoing = self:nextHalfEdge(incoming)
+    local outgoing = self:nextTriangleHalfEdge(incoming)
     incoming = self:oppositeSide(outgoing)
     if incoming == -1 or incoming == s or incoming == nil then
       break
@@ -237,7 +241,7 @@ function Mesh:cellsAroundCell(r)
   local cells = {}
   while true do
     table.insert(cells, self:cellWithInnerSide(incoming))
-    local outgoing = self:nextHalfEdge(incoming)
+    local outgoing = self:nextTriangleHalfEdge(incoming)
     incoming = self:oppositeSide(outgoing)
     if incoming == -1 or incoming == s then
       break
@@ -251,7 +255,7 @@ function Mesh:trianglesAroundCell(r)
   local triangles = {}
   while true do
     table.insert(triangles, self:triangleWithInnerSide(incoming))
-    local outgoing = self:nextHalfEdge(incoming)
+    local outgoing = self:nextTriangleHalfEdge(incoming)
     incoming = self:oppositeSide(outgoing)
     if incoming == -1 or incoming == s then
       break
@@ -279,7 +283,7 @@ function Mesh:forEachTriangleEdge(callback)
   for e = 0, self.numEdges - 1 do
     if (e < self._halfEdges[e]) then
       local p1 = self:cellPosition(self._triangles[e])
-      local p2 = self:cellPosition(self._triangles[self:nextHalfEdge(e)])
+      local p2 = self:cellPosition(self._triangles[self:nextTriangleHalfEdge(e)])
       if p1 and p2 then
         callback(p1, p2)
       end
