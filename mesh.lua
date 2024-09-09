@@ -65,6 +65,7 @@ The neighboring triangle has the opposite half-edge.
 ]]
 
 local Class = require((...):gsub("mesh", "class"))
+local orient2d = require((...):gsub("mesh", "orient2d"))
 
 local Mesh = Class {}
 
@@ -289,6 +290,67 @@ function Mesh:forEachTriangleEdge(callback)
       end
     end
   end
+end
+
+
+function Mesh:nextOutgoingEdge(e)
+  return self:nextTriangleHalfEdge(self:oppositeSide(e))
+end
+
+function Mesh:previousOutgoingEdge(e)
+  return self:oppositeSide(self:previousTriangleHalfEdge(e))
+end
+
+local function dist(x1, y1, x2, y2)
+  local dx = x2 - x1
+  local dy = y2 - y1
+  return dx * dx + dy * dy
+end
+
+function Mesh:findTriangleContainingPoint(p, startingTriangle)
+
+  startingTriangle = startingTriangle or math.random(0, self.numTriangles - 1)
+
+  if self:pointInTriangle(p, startingTriangle) then
+    return startingTriangle
+  end
+
+  local neighborA, neighborB, neighborC = self:trianglesAroundTriangle(startingTriangle)
+  local a, b, c = self:trianglePosition(neighborA), self:trianglePosition(neighborB), self:trianglePosition(neighborC)
+
+  -- find the closest triangle
+  local closestTriangle = neighborA
+  local minDist = dist(a.x, a.y, p.x, p.y)
+
+  local distB = dist(b.x, b.y, p.x, p.y)
+  local distC = dist(c.x, c.y, p.x, p.y)
+
+  if distB < minDist then
+    if distC < distB then
+      minDist = distC
+      closestTriangle = neighborC
+    else
+      minDist = distB
+      closestTriangle = neighborB
+    end
+  end
+
+  return self:findTriangleContainingPoint(p, closestTriangle)
+end
+
+function Mesh:pointInTriangle(p, t)
+  local edgeA, edgeB, edgeC = self:edgesOfTriangle(t)
+  local a, b, c = self:point(edgeA), self:point(edgeB), self:point(edgeC)
+
+  local aSide = orient2d(a.x, a.y, b.x, b.y, p.x, p.y)
+  local bSide = orient2d(b.x, b.y, c.x, c.y, p.x, p.y)
+  local cSide = orient2d(c.x, c.y, a.x, a.y, p.x, p.y)
+
+  local inside = aSide == bSide and bSide == cSide
+  if inside then
+    log.info("found triangle containing point, aSide = " .. aSide)
+  end
+  return inside
 end
 
 -- function Mesh:forEachTriangle(callback)
